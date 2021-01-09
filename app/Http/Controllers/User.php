@@ -19,7 +19,8 @@ class User extends Controller
                 'nome' => 'required|string',
                 'email' => 'required|string|email',
                 'senha' => 'required|string',
-                'confirm_senha' => 'required|string|same:senha'
+                'confirm_senha' => 'required|string|same:senha',
+                'telefone' => 'required|string|min:12'
             ],
             [
                 'nome.required' => 'Campo nome é obrigatorio!',
@@ -28,10 +29,12 @@ class User extends Controller
                 'senha.required' => 'Campo senha é obrigatorio!',
                 'confirm_senha.required' => 'Campo confirm_senha é obrigatorio!',
                 'confirm_senha.same' => 'Senhas devem ser iguais!',
+                'telefone.required' => 'Campo telefone é obrigatório!',
+                'telefone.min' => 'Telefone informado tem o formato inválido!'
             ]
         );
 
-        if($validate->fails()) {
+        if ($validate->fails()) {
             return response()->json(['message' => $validate->errors()->first()], 400);
         }
 
@@ -39,8 +42,12 @@ class User extends Controller
         $nome = $request->input('nome');
         $email = $request->input('email');
         $senha = Hash::make($request->input('senha'));
+        $telefone = $request->input('telefone');
 
         $sql = "INSERT INTO usuario (nome, email, senha) VALUES ('$nome', '$email', '$senha')";
+        DB::insert($sql);
+
+        $sql = "INSERT INTO telefone_usuario (numero, id_usuario) VALUES ('$telefone', (SELECT idusuario FROM usuario WHERE email = '$email'))";
         DB::insert($sql);
 
         return response()->json(['message' => 'Usuario cadastrado com sucesso!'], 201);
@@ -57,7 +64,7 @@ class User extends Controller
         $sql = "SELECT idavatares, path FROM avatares_usuario WHERE id_usuario = $userId";
         $avatar = DB::selectOne($sql);
 
-        if($avatar) {
+        if ($avatar) {
             Storage::delete("public/user/$avatar->path");
             $sql = "UPDATE avatares_usuario SET path = '$filename' WHERE idavatares = $avatar->idavatares";
             DB::update($sql);

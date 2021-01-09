@@ -16,5 +16,9 @@ Route::group(['middleware' => ['api']], function() {
 
     Route::group(['middleware' => ['aut']], function() {
         Route::post('avatar', 'App\Http\Controllers\User@insertAvatar');
+
+        Route::post('address', 'App\Http\Controllers\Address@insert');
+        Route::get('address', 'App\Http\Controllers\Address@list');
+        Route::delete('address/{id}', 'App\Http\Controllers\Address@delete');
     });
 });
